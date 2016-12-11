@@ -35,9 +35,11 @@ class A3C(object):
         self.global_network.create_loss(ENTROPY_BETA)
 
         self.initial_learning_rate = log_uniform(INITIAL_ALPHA_LOW, INITIAL_ALPHA_HIGH, INITIAL_ALPHA_LOG_RATE)
+        print 'initial_learning_rate:', self.initial_learning_rate
         self.learning_rate_input = tf.placeholder('float')
         self.optimizer = tf.train.RMSPropOptimizer(learning_rate=self.learning_rate_input,
                                                    decay=RMSP_ALPHA, momentum=0.0, epsilon=RMSP_EPSILON)
+
         grads_and_vars = self.optimizer.compute_gradients(
             self.global_network.total_loss, self.global_network.get_vars())
         self.apply_gradients = self.optimizer.apply_gradients(grads_and_vars)
@@ -108,6 +110,8 @@ class A3C(object):
         batch_action = []
         batch_td = []
         batch_R = []
+
+        train_count = 0
         while True:
             if self.stop_requested or (self.global_t > MAX_TIME_STEP):
                 break
@@ -123,16 +127,20 @@ class A3C(object):
                 continue
 
             self.sess.run(self.apply_gradients, feed_dict={
-                self.local_network.state_input: batch_state,
-                self.local_network.action_input: batch_action,
-                self.local_network.td: batch_td,
-                self.local_network.R: batch_R
+                self.global_network.state_input: batch_state,
+                self.global_network.action_input: batch_action,
+                self.global_network.td: batch_td,
+                self.global_network.R: batch_R,
+                self.learning_rate_input: self.initial_learning_rate
             })
 
             batch_state = []
             batch_action = []
             batch_td = []
             batch_R = []
+
+            train_count += 1
+            print 'train_count:', train_count
         return
 
     def signal_handler(self, signal_, frame_):
@@ -150,9 +158,9 @@ class A3C(object):
         for t in predict_treads:
             t.start()
 
-        train_thread = threading.Thread(target=self.train_function, args=(self.lock))
+        train_thread = threading.Thread(target=self.train_function, args=(self.lock, ))
         train_thread.start()
-        
+
         print 'Press Ctrl+C to stop'
         signal.pause()
 

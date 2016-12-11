@@ -31,6 +31,9 @@ class A3CActorThread(object):
         return
 
     def choose_action(self, policy_output):
+        if random.random() < RANDOM_ACTION_PROBILITY:
+            return random.randint(0, ACTION_DIM - 1)
+
         values = []
         sum = 0.0
         for rate in policy_output:
@@ -61,10 +64,6 @@ class A3CActorThread(object):
         # reduce the influence of socket connecting time
         if self.episode_start_time == 0.0:
             self.episode_start_time = timestamp()
-
-        sess.run(self.reset_gradients)
-        # copy weight from global network
-        sess.run(self.sync)
 
         start_local_t = self.local_t
 
