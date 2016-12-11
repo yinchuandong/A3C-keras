@@ -3,6 +3,7 @@ STATE_DIM = 84
 STATE_CHN = 4
 ACTION_DIM = 2
 
+BATCH_SIZE = 64
 LOCAL_T_MAX = 5  # repeat step size
 RMSP_ALPHA = 0.99  # decay parameter for RMSProp
 RMSP_EPSILON = 0.1  # epsilon parameter for RMSProp
@@ -16,8 +17,9 @@ INITIAL_ALPHA_LOG_RATE = 0.4226  # log_uniform interpolate rate for learning rat
 
 PARALLEL_SIZE = 4  # parallel thread size, please start game_server first
 USE_GPU = True
-USE_LSTM = True
+USE_LSTM = False  # currently cannot use lstm
 
+REDIS_QUEUE_NAME = 'bird'
 CHECKPOINT_DIR = 'tmp/checkpoints'
 LOG_FILE = 'tmp/a3c_log'
 
