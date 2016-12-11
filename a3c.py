@@ -123,7 +123,7 @@ class A3C(object):
             batch_td.append(td)
             batch_R.append(R)
 
-            if len(batch_R) < 32:
+            if len(batch_R) < BATCH_SIZE:
                 continue
 
             self.sess.run(self.apply_gradients, feed_dict={

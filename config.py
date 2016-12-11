@@ -3,7 +3,7 @@ STATE_DIM = 84
 STATE_CHN = 4
 ACTION_DIM = 2
 
-BATCH_SIZE = 64  # the batch size of training
+BATCH_SIZE = 16  # the batch size of training
 RANDOM_ACTION_PROBILITY = 0.1  # the probilitf of randomly selecting action
 
 LOCAL_T_MAX = 5  # repeat step size
