@@ -66,6 +66,7 @@ class A3C(object):
 
         self.lock = threading.Lock()
         self.rq = RedisQueue(REDIS_QUEUE_NAME)
+        self.train_count = 0
         return
 
     def restore(self):
@@ -105,13 +106,12 @@ class A3C(object):
             # print 'global_t:', self.global_t
         return
 
-    def train_function(self, lock):
+    def train_function(self, index, lock):
         batch_state = []
         batch_action = []
         batch_td = []
         batch_R = []
 
-        train_count = 0
         while True:
             if self.stop_requested or (self.global_t > MAX_TIME_STEP):
                 break
@@ -126,6 +126,7 @@ class A3C(object):
             if len(batch_R) < BATCH_SIZE:
                 continue
 
+            lock.acquire()
             self.sess.run(self.apply_gradients, feed_dict={
                 self.global_network.state_input: batch_state,
                 self.global_network.action_input: batch_action,
@@ -133,14 +134,15 @@ class A3C(object):
                 self.global_network.R: batch_R,
                 self.learning_rate_input: self.initial_learning_rate
             })
+            self.train_count += 1
+            lock.release()
 
             batch_state = []
             batch_action = []
             batch_td = []
             batch_R = []
 
-            train_count += 1
-            print 'train_count:', train_count
+            print 'train_index:', index, 'train_count:', self.train_count
         return
 
     def signal_handler(self, signal_, frame_):
@@ -158,14 +160,18 @@ class A3C(object):
         for t in predict_treads:
             t.start()
 
-        train_thread = threading.Thread(target=self.train_function, args=(self.lock, ))
-        train_thread.start()
+        train_threads = []
+        for i in range(TRAIN_SIZE):
+            train_threads.append(threading.Thread(target=self.train_function, args=(i, self.lock)))
+            train_threads[i].start()
 
         print 'Press Ctrl+C to stop'
         signal.pause()
 
         print 'Now saving data....'
         for t in predict_treads:
+            t.join()
+        for t in train_threads:
             t.join()
 
         self.backup()

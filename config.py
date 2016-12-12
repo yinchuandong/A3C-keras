@@ -4,7 +4,7 @@ STATE_CHN = 4
 ACTION_DIM = 2
 
 BATCH_SIZE = 16  # the batch size of training
-RANDOM_ACTION_PROBILITY = 0.1  # the probilitf of randomly selecting action
+RANDOM_ACTION_PROBILITY = 1e-10  # the probility of randomly selecting action
 
 LOCAL_T_MAX = 5  # repeat step size
 RMSP_ALPHA = 0.99  # decay parameter for RMSProp
@@ -18,6 +18,7 @@ INITIAL_ALPHA_HIGH = 1e-3   # log_uniform high limit for learning rate
 INITIAL_ALPHA_LOG_RATE = 0.4226  # log_uniform interpolate rate for learning rate (around 7 * 10^-4)
 
 PARALLEL_SIZE = 4  # parallel thread size, please start game_server first
+TRAIN_SIZE = 4  # how many training threads
 USE_GPU = True
 USE_LSTM = False  # currently cannot use lstm
 
